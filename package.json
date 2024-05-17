@@ -11,12 +11,6 @@
   "cordova": {
     "platforms": [
       "android"
-    ],
-    "plugins": {
-      "cordova-plugin-whitelist": {},
-      "cordova-plugin-statusbar": {},
-      "cordova-plugin-splashscreen": {},
-      "cordova-plugin-geolocation": {}
-    }
+    ]
   }
 }
