@@ -11,12 +11,12 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
-        node-version: '22'
+        node-version: '20'
 
     - name: Install Cordova CLI
       run: npm install -g cordova
@@ -28,8 +28,11 @@ jobs:
         cordova prepare
         cordova build android --release
 
+    - name: List output files
+      run: ls -la platforms/android/app/build/outputs/apk/release/
+
     - name: Upload APK
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: app-release.apk
         path: platforms/android/app/build/outputs/apk/release/app-release.apk
