@@ -27,13 +27,15 @@ jobs:
         cordova platform add android
         cordova prepare
         cordova build android --release
-
-    - name: List output files
-      run: ls -la platforms/android/app/build/outputs/apk/release/
-
+        
     - name: Upload APK
       uses: actions/upload-artifact@v3
       with:
         name: app-release.apk
         path: platforms/android/app/build/outputs/apk/release/app-release.apk
         
+    - name: Upload APK!
+      uses: actions/upload-artifact@v3
+      with:
+        name: enchanti-ide.zip
+        path: ./libs
