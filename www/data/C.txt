@@ -1,0 +1,4 @@
+; syntax:
+; global variable=custom name
+; $2 -> $PLAYER_CHAR
+; $409 -> $ONMISSION
