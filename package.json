@@ -17,7 +17,6 @@
       "cordova-plugin-statusbar": {},
       "cordova-plugin-splashscreen": {},
       "cordova-plugin-geolocation": {}
-      // Añade aquí más plugins según necesites
     }
   }
 }
