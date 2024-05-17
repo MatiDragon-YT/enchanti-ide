@@ -29,11 +29,11 @@ jobs:
         cordova build android
 
     - name: List output files
-      run: ls -R /platforms/
+      run: ls platforms
       
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: enchanti-ide.apk
-        path: platforms/android/app/build/outputs/apk/release/enchanti-ide.apk
+        path: platforms/android/app/build/outputs/apk/enchanti-ide.apk
     
