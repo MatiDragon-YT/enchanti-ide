@@ -1,0 +1,23 @@
+{
+  "name": "enchanti-ide",
+  "version": "1.0.0",
+  "description": "Un IDE para crear CLEOs scripts.",
+  "dependencies": {
+    "cordova": "^10.0.0"
+  },
+  "scripts": {
+    "build": "cordova build android"
+  },
+  "cordova": {
+    "platforms": [
+      "android"
+    ],
+    "plugins": {
+      "cordova-plugin-whitelist": {},
+      "cordova-plugin-statusbar": {},
+      "cordova-plugin-splashscreen": {},
+      "cordova-plugin-geolocation": {}
+      // Añade aquí más plugins según necesites
+    }
+  }
+}
