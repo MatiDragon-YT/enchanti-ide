@@ -26,11 +26,14 @@ jobs:
         npm install
         cordova platform add android
         cordova prepare
-        cordova build android --release
-        
+        cordova build android
+
+    - name: List output files
+      run: ls -R
+      
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: app-release.apk
-        path: platforms/android/app/build/outputs/apk/release/app-release.apk
+        name: enchanti-ide.apk
+        path: platforms/android/app/build/outputs/apk/release/enchanti-ide.apk
     
