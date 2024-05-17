@@ -25,6 +25,7 @@ jobs:
       run: |
         npm install
         cordova platform add android
+        cordova plugin add cordova-plugin-file
         cordova prepare
         cordova build android
 
