@@ -1,1 +1,1708 @@
-<h1>Hola Mundo!!</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.2">
+	<title>Enchanti IDE</title>
+	<link rel="stylesheet" href="./css/main.css">
+	<link rel="manifest" href="./manifest.json">
+</head>
+<body style="display: block;">
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+}
+  
+
+  .header, .subheader, .navbar{
+    background-color: #360047;
+    /*text-align: center;*/
+  }
+  .header {border-bottom: 1px solid #4d004b;}
+
+  .navbar {
+    overflow: hidden;
+    border: 1px solid #4d004b;
+  }
+
+  .navbar a, .navbar label {
+    font-size: .7rem;
+    float: left;
+    display: block;
+    color: #dcb8ff;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+
+  .dropdown {
+    float: left;
+    overflow: hidden;
+  }
+
+  .dropdown .dropbtn {
+    font-size: .7rem;    
+    border: none;
+    outline: none;
+    color: white;
+    padding: .9rem 1rem;
+    background-color: inherit;
+    font-family: inherit;
+    margin: 0;
+  }
+
+  .navbar a:hover, .dropdown:hover .dropbtn {
+    background-color: #4d004b;
+    color: #fff;
+  }
+  .navbar a[disabled], .dropdown dropbtn[disabled]{
+    color: #A5229E;
+    background-color: #3D003B;
+  }
+
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #360047;
+    min-width: 10rem;
+    box-shadow: 0 .5rem 1rem 0 rgba(0,0,0,0.33);
+    z-index: 1;
+  }
+
+  .dropdown-content a, .dropdown-content label {
+    float: none;
+    color: #dcb8ff;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+  }
+
+  .dropdown-content a:hover, .dropdown-content label:hover{
+    background-color: #4d004b;
+  }
+
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+  ::-webkit-scrollbar-thumb { background: #00e676}
+</style>
+<!--
+<div id="autocomplete" style="
+    background: #28313e;
+    position: absolute;
+    display: block;
+    top: calc(168px - -1.5em);
+    left: calc(179px - 0.5em);
+    padding: 0.1em 0.4em;
+    margin: 0;
+    border: 0;
+">#JESTES = 345</div>
+-->
+<style>
+* {
+	font-size: 1rem;
+}
+.contador {
+    counter-increment: listing;
+    color: grey;
+    width: 3em;
+    position: relative;
+    display: inline-block;
+}
+.contador::before {
+    content: counter(listing, decimal-leading-zero);
+}
+#state.loading {
+    outline: #ff5252 solid 1px !important;
+}
+#version_sbl, #state{
+    width: 5rem;
+    text-align: center;
+}
+</style>
+<script>
+
+	// GLOBAL VARS
+	const D = document
+
+	const SP = String.prototype
+	const EP = Element.prototype
+
+	//const SP = String.prototype
+	//const EP = Element.prototype
+
+	NodeList.prototype.forEach = Array.prototype.forEach
+
+/** Smart selector for elements of the DOM
+ * @param {DOMString}
+ * @param {Element|Function} optional
+ * @return {Element}
+*/
+const $ = (element, _parent = D) => {
+	const callback = _parent
+	if (typeof _parent == 'function'){
+		_parent = D
+	}
+	const xElements = _parent.querySelectorAll(element)
+	const length = xElements.length
+
+	element = element.charAt(0) === '#' && !/\s/.test(element) || length === 1
+		? _parent.querySelector(element)
+		: length === 0
+			? undefined
+			: xElements
+
+	if (typeof callback == 'function'){
+		if(element){
+			if('' + element == '[object NodeList]'){ 
+				element.forEach(function(e,i){
+					callback(e,i)
+				})
+			}else{  
+				callback(element)
+			}
+		}
+	}else{
+		return element
+	}
+}
+
+/** Smart selector for elements of the DOM
+ * @param {DOMString}
+ * @return {Element}
+*/
+const new$ = (element, parent = 'body') => {
+	let $temp = D.createElement(element)
+	$(parent).appendChild($temp)
+	return $temp
+}
+/** Shotcun of String.replace()
+*/
+String.prototype.r = function(text, _text='', _flags=''){
+	return this.replace(text, _text, _flags)
+}
+
+/** Polifill and shotcun of String.replaceAll()
+*/
+String.prototype.rA = function(text, _text=''){
+	var temp = this
+
+	if(temp.indexOf(text, 0) !== -1){
+		temp = temp
+		.r(text, _text)
+		.rA(text, _text)
+	}
+	
+	return temp
+}
+
+/** Apply a function to all elements of the DOM
+ * @param {NodeList} 
+ * @param {function}
+*/
+function apply(element, callback){
+	if(element){
+		if('' + element == '[object NodeList]'){ 
+			element.forEach(function(e){
+				callback(e)
+			})
+		}else{  
+			callback(element)
+		}
+	}
+}
+SP.dividirCadena = function() {
+    const resultado = [];
+    let dentroComillas = false;
+    let subcadenaActual = '';
+    let comilla = 0
+
+    for (let i = 0; i < this.length; i++) {
+        const caracter = this[i];
+        const caracterAnterior = this[i-1];
+
+        if (caracter === '"' || caracter === "'"){
+          if (caracterAnterior != '\\') {
+             dentroComillas = !dentroComillas;
+          }
+          
+          subcadenaActual += caracter;
+        } else if (caracter === ' ' && !dentroComillas) {
+            // Si encontramos un espacio fuera de las comillas, guardamos la subcadena actual
+            if (subcadenaActual.trim() !== '') {
+                resultado.push(subcadenaActual);
+            }
+            subcadenaActual = '';
+        } else {
+            subcadenaActual += caracter;
+        }
+    }
+
+    // Al final, si hay una subcadena no vacía, la agregamos al resultado
+    if (subcadenaActual.trim() !== '') {
+        resultado.push(subcadenaActual);
+    }
+
+    return resultado;
+}
+
+
+let shared_db = JSON.parse(localStorage.getItem("shared_db") || "")
+
+SP.fixOpcodes = function(){
+  let tm = this.split('\n').map(line => {
+    let negado = false
+    line = line.trim().dividirCadena()
+    
+    //log(line)
+    if (line.length >= 1){
+      if (line[0].length < 5 && line[0].endsWith(':')){
+        line[0] = line[0].r(/:$/m)
+        if (line[0].startsWith('!')){
+          line[0] = line[0].r(/^\!/m).hexToDec()
+          line[0] += 0b1000000000000000
+          line[0] = line[0].toString(16)
+        }
+        line[0] = (line[0]+'').padStart(4, '0') + ':'
+      }
+    }
+    
+    line = line.join(' ')
+    return line
+  }).join('\n')
+  
+  return tm
+}
+
+function getLine(){
+  textData = $node.getLine()
+  /* lineaCursor, columnaCursor,
+			inSelection, charsSelected,
+			textSelected, primerPalabra, mediaPalabra */
+
+	if (textData.inSelection){
+		$('#line').innerText = textData.charsSelected
+		$('#opcode').innerText = ''
+	}else{
+		$('#line').innerText = textData.lineaCursor+':'+textData.columnaCursor
+		
+		let $o = x => $('#opcode').innerText = x
+		let $d = x => $("#short_desc").innerHTML = x
+		
+		let p = textData.primerPalabra.toLowerCase()
+		let m = textData.mediaPalabra
+		let o = shared_db[shared_db[p]] ?? shared_db[p]
+		
+		$d('')
+		$o('')
+		
+		p = p.r(/^\w+\(\)$/, '0050:')
+		
+		if (/[^@$&]/.test(p))
+		  p = p.r('!');
+		  
+		if (/^\w{1,4}:$/m.test(p))
+		  p = p.padStart(5, '0');
+		
+		let opcode = shared_db[p.r(':').toLowerCase()]
+		
+		if (/([a-z]\w+)?\.[a-z]\w+\(.+\)/i.test(textData.textLine)) {
+		  $o('class detected')
+		  
+		  //$d(shared_db[p.r(':')].short_desc)
+		}
+		else if (/^\!?[a-f\d]{1,4}:$/mi.test(p)) {
+		  $o(
+		    '▼ '+p.toUpperCase()+':'
+		    +opcode.num_params 
+		    +' ('+(m != p ? m : '')+')'
+		  )
+		  
+		  $d(opcode.short_desc)
+		}
+		else if (opcode){
+		  if (typeof o != 'object'){
+		    o = shared_db[o.toLowerCase()]
+		  }
+		  
+		  $o(
+		    '▼ '+opcode.id+'::'+
+		   +(o.num_params)
+		   +' ('+m+')'
+		 )
+		 
+		 $d(o.short_desc)
+		 
+		}
+		else if (/[\+\-\*\/=%<>!]?[=\-+][@#]?/.test(textData.textLine)) {
+		  $o('operation detected')
+		}
+		
+	}
+}
+
+function delay(callback, ms) {
+    let timer = 0;
+    return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(timer);
+        timer = setTimeout(function() {
+            callback.apply(context, args);
+        }, ms || 0);
+    };
+}
+
+EP.class = function(str){
+  if (!/^[\?\+\-\~\>]/m.test(str))
+    return alert("add action");
+  
+  if (action == '+') this.classList.add(str);
+  if (action == '-') this.classList.remove(str);
+  if (action == '~') this.classList.toggle(str);
+  if (action == '>') this.classList.replace(str);
+  if (action == '?')
+    return this.classList.contains(str)
+}
+
+	EP.next = function(){
+		return this.nextElementSibling
+	}
+
+	EP.previous = function(){
+		return this.previousElementSibling
+	}
+	
+	EP.gAttr = function (attr){
+	  return this.getAttribute(attr)
+	}
+	
+  EP.sAttr = function(attr, val="") {
+    this.setAttribute(attr, val)
+  }
+
+	EP.hidden = function(){
+	    return this.style.display == "none"
+	}
+
+	EP.show = function(){
+	    this.style.display = "block"
+	}
+
+	EP.hide = function(){
+	    this.style.display = "none"
+	}
+
+	EP.toggle = function(c){
+		if (c){
+			setTimeout(function(){
+				// Clear the hash
+				history.pushState('', document.title, location.pathname)
+			}, 12)	
+		}
+
+		if (this.classList.contains("d-block")){
+			this.classList.remove('d-block')
+			this.style = 'display:block'
+		}
+		if (this.classList.contains("d-none")){
+			this.classList.remove('d-none')
+			this.style = 'display:none'
+		}
+
+		getComputedStyle(this).display == "block"
+			? this.hide()
+			: this.show()
+		;
+	}
+
+	EP.setCursor = function(atPosition){
+	    this.setSelectionRange(atPosition, atPosition);
+	    this.focus();
+	}
+	
+	EP.setCursorFull = function (linea, columna) {
+	  linea<1?linea=1:linea
+    // Obtenemos el contenido del TextArea
+    const contenido = this.value;
+
+    // Calculamos la posición del cursor en función de la línea y columna
+    let posicionCursor = 0;
+    let lineas = contenido.split("\n");
+    for (let i = 0; i < Math.min(linea - 1, lineas.length); i++) {
+        posicionCursor += lineas[i].length + 1; // Sumamos 1 para el salto de línea
+    }
+    posicionCursor += Math.min(columna, lineas[linea - 1].length);
+
+    // Establecemos la posición del cursor
+    this.selectionStart = posicionCursor;
+    this.selectionEnd = posicionCursor;
+    
+    updateDataLine()
+}
+
+
+	EP.getCursor = function(){
+		return [this.selectionStart, this.selectionEnd]
+	}
+
+	EP.getLine = function(){
+		let t = this.getCursor()
+		let posicionCursor = t[0] != t[1] ? t[0] - t[1] : t[0];
+		let stringRequerido = this.value.substr(0, posicionCursor)
+		let lineaCursor = stringRequerido.split("\n").length;
+		let posicionLinea = stringRequerido.lastIndexOf("\n") + 1;
+		const textLine = this.value.split("\n")[lineaCursor-1].trim()
+		let primerPalabra = textLine.split(' ')[0]
+		
+		const columnaCursor = posicionCursor-posicionLinea
+		
+		let tempA = (str) =>{
+		  let palabra = ''
+		  let corta = " ,<>{}()[]\t\n"
+		  for (let i = columnaCursor; i < str.length; i++){
+		    if (corta.includes(str[i])) break;
+		    palabra += str[i]
+		  }
+		  for (let i = columnaCursor-1; i >= 0; i--){
+		    if (corta.includes(str[i])) break;
+		    palabra = str[i] + palabra
+		  }
+		  return palabra
+		}
+		const inSelection = posicionCursor < 0
+		
+		let mediaPalabra = ''
+		if (!inSelection) {
+		  mediaPalabra = tempA(this.value.split("\n")[lineaCursor - 1])
+		}
+		
+		const charsSelected = inSelection ? posicionCursor*-1 : 0
+		const textSelected = this.value.substr(
+		  this.getCursor()[0],
+		  this.getCursor()[1]
+		)
+		
+		const output = {
+			lineaCursor, columnaCursor,
+			inSelection, charsSelected,
+			textSelected, primerPalabra,
+			mediaPalabra, textLine
+		}
+		return output
+	}
+
+	EP.AddAtSection = function(text){
+	  var start = this.selectionStart;
+	  var end = this.selectionEnd;
+	  this.value = this.value.substring(0, start) + text + this.value.substring(end);
+	  this.selectionStart = this.selectionEnd = start + 1; // Posiciona el cursor
+	  this.focus()
+	}
+
+	EP.obtenerUltimaPalabra = function() {
+    const contenido = this.value.trim();
+    let cursorPosicion = this.selectionStart;
+
+    // Buscamos la posición del espacio, tabulación, salto de línea o retorno de carro anterior al cursor
+    const regex = /[\s\t\n\r]+/g;
+    const palabras = contenido.split(regex);
+
+    // Obtenemos la última palabra antes del cursor
+    let ultimaPalabra = "";
+    for (let i = 0; i < palabras.length; i++) {
+        if (palabras[i].length + 1 <= cursorPosicion) {
+            cursorPosicion -= palabras[i].length + 1;
+        } else {
+            if (cursorPosicion === 0) {
+                // Si el cursor está justo después de un espacio, avanzamos al siguiente
+                i++;
+            }
+            ultimaPalabra = palabras[i];
+            break;
+        }
+    }
+
+    // Verificamos si la última palabra es un espaciador de caracteres
+    if (/\s/.test(ultimaPalabra)) {
+        return ""; // No retornamos nada si es un espaciador
+    }
+
+    return ultimaPalabra;
+}
+
+EP.getTextSelected = function() {
+    let start = this.selectionStart;
+    let end = this.selectionEnd;
+    return this.value.substring(start, end);
+}
+
+	EP.CopyTextContent = function() {
+		let $temp = new$("textarea")
+		$temp.value = (typeof this == 'object' ? this.textContent : this)
+		$temp.select();
+		D.execCommand("copy")
+		$('body').removeChild($temp)
+	}
+</script>
+
+
+  <div class="navbar d-flex between">
+    <div>
+      
+    <div class="dropdown">
+      <button class="dropbtn">ᚪile 
+        <i class="fa fa-caret-down"></i>
+      </button>
+      <div class="dropdown-content">
+        <a onclick="$('#HEX').value = `nop
+wait 0
+
+// you magic here
+
+terminate_this_script`;$('#HEX').focus();$('#PREVIEW').innerHTML = '';" title="script">New</a>
+        <label for="file" title="source">Open...</label>
+        <label onclick="let h = localStorage.getItem('code-cached')??'';$('#HEX').value=h;$('#HEX').focus();$('#PREVIEW').innerHTML=h" title="source">Load cache</label>
+        <a onclick="localStorage.setItem('code-cached',$('#HEX').value)" title="within the browser">Save cache</a>
+        <a onclick="saveSource()" title="as any file">Save as...</a>
+        <a onclick="compilerSource()" title="source">Compile</a>
+      </div>
+    </div> 
+    <div class="dropdown">
+      <button class="dropbtn">モditor 
+        <i class="fa fa-caret-down"></i>
+      </button>
+      <div class="dropdown-content">
+        <a cmd=undo href="#">Undo</a>
+        <a cmd=redo href="#">Redo</a>
+        <a cmd=copy href="#">Copy</a>
+        <a cmd=cut href="#">Cut</a>
+        <a cmd=paste href="#">Paste</a>
+      </div>
+    </div> 
+    <div class="dropdown">
+      <button class="dropbtn" disabled>ㄘettings
+        <i class="fa fa-caret-down"></i>
+      </button>
+      <div class="dropdown-content">
+        <a href="#" disabled>Preferences</a>
+        <a href="#" disabled>Theme</a>
+        <a href="#" disabled>Hotkeys</a>
+      </div>
+    </div>
+    </div>
+    <a>Σηςнαητι ✦</a>
+    <!--<a>ΣηςнαητιSςrιρτ ✦</a>-->
+  </div>
+
+<style>
+.f-2 {
+	font-size: 1.2rem;
+}
+.bg-none {
+	background: none!important;
+}
+button, label {
+	border: none;
+	font-size: .7rem;
+	background: none;
+	color: #fff;
+}
+input[type=text]{
+  background: #200029;
+  border-bottom: 1px solid #200029;
+}
+</style>
+
+<form id="FORMULARIO">
+
+
+<div class="d-flex between subheader">
+ <div>
+  <input type="text" id="FILENAME" placeholder="File name" autocomplete="off" spellcheck="false" value="EnchantiScript.csi">
+		<input id='file' type='file' accept='.txt,.ini' class="d-none">
+		<button onclick="saveSource()" title=Descargar> ⇊️ </button>
+		<button onclick="compilerSource()" title=Compilar> ⇶️ </button>
+ </div>
+ <div id="change-view" class="pr-2 green size-4">
+   <btn class="bg-none d-sm-none" style="font-size: 1.5rem" onclick="
+   $('#HEX').toggle();
+   $('#PREVIEW').toggle();
+   $('#OUTHEX').toggle();
+   $('#editor-counterLine').toggle();">ᛒ</btn>
+ </div>
+</div>
+
+<div id="editor-body">
+  <pre id="editor-counterLine" class="m-0 r-0 p-1"></pre>
+	<textarea id="HEX" class="w-100 m-0 r-0 p-1 pl-5" placeholder="WIZARD, CAST THY SPELL!
+	ᚹᛁᛉᚨᚱᛞ, ᚲᚨᛊᛏ ᚦᚤ ᛊᛈᛖᛚᛚ!" autocomplete="off" spellcheck="false">{ Syntax based on SB4 and JS }
+0000: this_is_a_NOP
+$misc != 0xff ? 7@ = !7@ : A = B || 0b1000
+X = 3@+1 == 5_5 ? false : undefined
+function(2@(3@++,123), "test\t#1 <=")
+0@ = Char.Create(PedType.Gang1, #FAM1, .0, 0f, 0.0)
+.SetHeading(0@ 1.2e-5)
+subrutine()
+while !.DoesExist($Player_Actor--)
+  wait .3s /* remember the last class */
+  if IS_KEY_PRESSED KeyCode.A
+  then break
+  else continue
+  end
+end
+terminate_this_script
+// gosubs & funcs here ↓
+:subrutine
+return
+
+:function
+cleo_return 0 {}</textarea>
+<pre id='PREVIEW' style="filter: blur(2px);" class="w-100 m-0 r-0 p-1"></pre>
+
+	<pre type="text" id="OUTHEX" placeholder="hex's output" name="cleaned_hex" disabled class="w-100 m-0 r-0 pr-1 gray d-none"></pre>
+</div>
+
+<div id="error" placeholder="hex's output" name="cleaned_hex" class="w-100 p-1" style="
+    background: #290000;
+    color: #ff8080;
+    white-space: pre-wrap;
+    display: none;"></div>
+    
+<style>
+#editor-body {
+  aspect-ratio: 16 / 9;
+  overflow: auto;
+  display: flex;
+}
+#editor-counterLine {
+  overflow: hidden;
+  width: 3rem;
+  color:#7d5bbe;
+  background: #200029;
+}
+#HEX {
+  position: absolute;
+  white-space: pre;
+  color: transparent;
+  background: transparent;
+  caret-color: white;
+  resize: none;
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  line-height: 1.5em;
+  text-wrap: wrap;
+  aspect-ratio:16/9;
+}
+#PREVIEW {
+	transition: all 0.2s ease 0s;
+  white-space: pre;
+  text-wrap: wrap;
+  z-index: -99;
+  aspect-ratio:16/9;
+  color: #dcb8ff;
+  background: #200029;
+}
+#editor-counterLine,
+#data-line-config *,
+#error,
+#HEX,
+#PREVIEW,
+#PREVIEW *,
+#short_desc {
+  font-size: 0.7rem!important;
+  tab-size: 2;
+}
+#FILENAME, {
+  border-bottom: #161b22 1px solid;
+}
+#short_desc {
+  overflow: auto;
+  max-height: 2rem;
+}
+#table-command {
+  background: #360047;
+}
+select {
+  background: none;
+  color: #fff;
+}
+footer, blockquote {
+  background: #2c003e;
+}
+pre {
+  color: #dcb8ff;
+  background: #200029;
+}
+details[open] div {
+  padding-left: 1rem;
+  padding-top: .5rem;
+}
+details[open]::after{
+  content: '';
+  border: 0;
+  display: block;
+	border-bottom: solid #30363d 1px;
+	width: 100%;
+	margin: 15px 0;
+}
+</style>
+<div style='background: #2c003e'>
+<div id="table-command" class="d-flex column header">
+<footer id="data-line-config" class="d-flex between py-1 w-100 header">
+<div class="d-flex between g-3">
+<span id='opcode' onclick="$('#short_desc').toggle()"></span>
+</div>
+<div class="d-flex">
+<span id='line'>0:0</span>
+<span id='state' class="loading">Wait...</span>
+<span id='version_sbl' class="d-none d-md-block">SBL</span>
+<select id='mode' class="ml-1" style="border: none;" disabled>
+  <option value="gta3">GTA III</option>
+  <option value="lcs">GTA LCS</option>
+  <option value="sa" selected>SA Cross-Plataform</option>
+  <option value="vc">GTA VC</option>
+  <option value="vcs">GTA VCS</option>
+  <option value="gta3_mobile">III Mobile</option>
+  <option value="sa_mobile">SA Mobile</option>
+  <option value="vc_mobile">VC Mobile</option>
+</select>
+</div>
+</footer>
+<footer id="short_desc" class="py-1 d-none"></footer>
+
+<footer class="d-flex p-2 pb-0 w-100 g-3 d-sm-none subheader" id="keys-mobile">
+<key>→|</key>
+<key>&</key>
+<key>@</key>
+<key>$</key>
+<key>#</key>
+<key>=</key>
+<key>_</key>
+<key>""</key>
+<key>''</key>
+<key>()</key>
+<key>{}</key>
+<key>[]</key>
+</footer>
+<footer class="d-flex p-2 pt-0 w-100 g-3 d-sm-none subheader" id="keys-actions">
+<key key="up">⇡</key>
+<key key="down">⇣</key>
+<key key="left">⇠</key>
+<key key="right">⇢</key>
+<key cmd="undo">↶</key>
+<key cmd="redo">↷</key>
+<key cmd="copy">⎘</key>
+<key cmd="cut">✄</key>
+<key cmd="paste">⎗</key>
+<key key="all">☰</key>
+</footer>
+
+<div class="d-none">
+<input type="search" value="" placeholder="actor, car, object...." id="search" class="w-100">
+<pre id="result-search"class="m-0 r-0">
+Actor.create(655)
+</pre>
+</div>
+</div>
+
+	<!--<input type="checkbox" id="CHBSEPARATOR" checked="checked">Remover "0x" de los grupos de entrada<br><br>-->
+
+</form>
+
+<blockquote class="warning">
+Bugs found:<br>
+IDE does not load <a onclick="
+  localStorage.clear()
+   window.location.href = window.location.href
+  ">clicking here</a>, wait 3s and refresh page.<br>
+Array support is limited to Local variables @(@,n).<br>
+Does not detect if a parameter has not been completed.
+</blockquote>
+<blockquote>
+IDE supports & features:
+<details>
+<summary>Syntax for conditions</summary>
+<h4>Primitive</h4>
+This is the most primitive way for the compiler to interpret code.
+<pre>
+IF 0
+  condition
+ELSE_GOTO @Label_false
+  body_is_true
+GOTO @End
+:Label_false
+  body_is_false
+:End
+</pre>
+The entire read stream moves through the conditions and jump points(labels).
+
+<h4>Sugared</h4>
+The IDE has syntactic sugar to prevent us from getting too dizzy, although for now there are very few of these. You can nest them inside each other without any problem.
+<pre>
+IF
+  condition
+THEN
+  body
+END
+
+IF
+  condition
+THEN
+  is_true
+ELSE
+  is_false
+END
+</pre>
+You can also apply several conditions. You only have to indicate if you want to do an AND or OR check. You have a maximum of 8 conditions
+<pre>
+IF (AND|OR)
+  condition_1
+  condition_2
+  condition_n+1
+THEN
+  body
+END
+</pre>
+<h4>Ternary</h4>
+The syntax comes from JS and since commands can only be typed 1 per line, the IDE allows you to allow the false ternary.
+<pre>
+contition ? body
+
+condition ? is_true : is_false
+</pre>
+Can also be used to assign a value to a variable
+<pre>
+var -= cond ? is_true : is_false
+</pre>
+For now only one condition, but support for more will be coming soon.
+</details>
+
+<details>
+<summary>Syntax for loops</summary>
+You can work with labels.
+<pre>
+:Loop
+  body
+GOTO @Loop
+</pre>
+Or use automated processes.
+<pre>
+WHILE condition
+  body
+END
+
+FOR var = start [TO|TODOWN] final [STEP (int|float)]
+  body
+END
+
+REPEAT
+  body
+UNTIL condition
+</pre>
+loop controls are also here
+<pre>
+BREAK CONTINUE
+
+FOR 0@ = 0 TO 10
+  IF 0@ == 3
+  THEN CONTINUE // jump a loop
+  END
+  IF 0@ == 7
+  THEN BREAK // exit of loop
+  END
+END
+</pre>
+There is only one difference. The `WHILE FALSE` loops are not ignored by the compiler, and are compiled as a separate area of the main flow. Their contents are only accessed if you have jumps into their body.
+<pre>
+0@ = 0
+WHILE FALSE
+  :Suma
+    0@++
+  return
+END
+printf "0@ = %i" 1s 0@ // 0
+Suma()
+wait 1s
+printf "0@ = %i" 1s 0@ // 1
+</pre>
+If you make blocks that are too big and you get lost among many `END`, you can use these fasteners:
+<pre>
+ENDIF ENDWHILE ENDFOR
+</pre>
+All of these are interpreted as the same `END`, so you can use them as worshippers or visual highlighters.
+</details>
+
+<details>
+<summary>Opcodes and commands</summary>
+<h4>Opcodes</h4>
+if you explore opcodes in documentations and forums, you don't need to memorize the 4 characters of the opcode or just copy it.
+<pre>
+0: nop          -->  0000: nop
+FE: actor[...]  -->  00FE: actor[...]
+!7F: car[...]   -->  807F: car[...]
+1234: wxyz      -->  1234: wxyz
+</pre>
+<h4>Commands</h4>
+This is another way to write opcodes, you just write its name and then it is replaced by the opcode.
+<pre>
+nop           -->  XXXX: nop
+WAIT 0        -->  XXXX: wait 0 ms
+not xyz 0@    -->  XXXX: ! xyz 0@[...]
+</pre>
+These can be written in lowercase or uppercase, and can be negated or contradicted by placing at the beginning of the line one of these 2 executors `!, NOT`.
+</details>
+
+<details>
+<summary>Classes and keywords</summary>
+<h4>Classes</h4>
+The IDE is connected to 2 databases to be able to script with legacy or enchanted commands. So if we use aaa.bbb() and ccc.ddd() they will use the same opcode.
+<pre>
+Normal:
+CLASS.MEMBER(PARAM, VAR)
+
+Method:
+CLASS.MEMBER
+
+Conditional:
+CLASS.MEMBER(PARAM) == VAR
+
+Setter:
+CLASS.MEMBER(PARAM) = VAR
+
+Getter:
+VAR = CLASS.MEMBER(PARAM)
+</pre>
+The compiler does not know the order of the custom parameters, but instead interprets the orders, depending on how the classes are used.<br>
+<br>
+Everything that is located before the class is relocated at the end of the class.
+<pre>
+Multi-Geting:
+VAR1 VAR2 = CLASS.MEMBER(PARAM)
+VAR1, VAR2 = CLASS.MEMBER(PARAM)
+</pre>
+You also do not need to use commas(,) to separate the data. The compiler can detect the change of the data type, using the spaces.<br>
+<br>
+The compiler remembers which was the last class used, so if you use a dot (.) at the beginning of the line, you will access the member of that class.
+<pre>
+Last-Used:
+.MEMBER(PARAM)
+</pre>
+<h4>Keywords</h4>
+keywords define the workflow and how it should behave on different occasions.
+Avoid naming things with these words, the order of how the text preprocessor is executed may break the script.
+<pre>
+IF, THEN, ELSE, END, WHILE, REPEAT,
+UNTIL, FOR, TRUE, FALSE, UNDEFINED,
+BREAK, CONTINUE, FOREACH, NOT, NULL
+</pre>
+</details>
+
+<details>
+<summary>Decimal interpreter</summary>
+The compiler not only has a translator for Hexadecimal and Binary numbers. It can also look up the numerical IDs of the model names.
+<pre>
+DEC  -6272_48 -2936 -42 0 5 972 729_0_03
+HEX  -0X7FFFFF -0x8AFF 0x0 0x03 0X700000
+BIN  -0B011110 -0b1110 0b0 0b01 0B10000000000
+TIME -2h -2m 1s 3.33S 10M 1H 60fps 30FPS
+NAME -#JESTER #fam1 #FAM2 #mini_gun
+NOTE -12E5 -3e2 1e9 10e+2 16E-3
+</pre>
+</details>
+
+<details>
+<summary>Floating interpreter</summary>
+If you program in any language, you may be used to some of its syntax. Here you will be able to use it.
+<pre>
+CSS -.0025 -.97 .0 .42 .736
+JS  -2_823.2 0.6_608 48_386.93
+PY  -42.8362 -3.5 1.0 142.8638
+C#  -20F -13.7f 1f 27f 52.86F
+R   -1.2E7 5.1e8 7.1e+2 9.3E-2
+</pre>
+You can begin or end a number with a period (.) or end it with `f`. Scientific notation (e) and separators (_) are also available.
+</details>
+
+<details>
+<summary>Expressions operative</summary>
+You have all the SB expressions and one extra.
+<pre>
+0@++         -->  000A: 0@ += 1
+0@ <> 1@     -->  803A: 0@ != 1@
+0@ = 1@      -->  0085: 0@ = 1@
+0@ = 1@ + 2@ -->  0A8E: 0@ = 1@ + 2@ // int
+0@ =# 1@     -->  0092: 0@ = int_to_float 1@
+0@ =& 1@     -->  0AC7: 0@ = var 1@ pointer
+0@ +=@ 1@    -->  007B: 0@ += delta_time * 1@
+0@ &= 1@     -->  0B17: 0@ &= bit 1@
+</pre>
+the compiler remembers the data type of each manually assigned variable, so you don't have to worry about the opcode used.<br>
+<br>
+you can also force a change of operation, adding a subfix (I or F) in the variable
+<pre>
+0@f++        -->  XXXX: 0@ += 1.0
+0@f <> 1@    -->  XXXX: 0@ != 1@
+0@ = 1@f     -->  XXXX: 0@ = 1@
+0@ =# 1@f    -->  XXXX: 0@ = float_to_int 1@
+</pre>
+if only one variable is written in a line, it is passed as a condition.
+<pre>
+0@           -->  0039: 0@ == true
+!0@          -->  0039: 0@ == false
+</pre>
+You can also assign a negated value to the variables, or see is truthy.
+<pre>
+0@ = !1@     -->  1@ ? 0@ = false : 0@ = true
+0@ = 1@b     -->  1@ ? 0@ = true : 0@ = false
+</pre>
+Fixed and temporary assignment operators are also available anywhere in the code.
+<pre>
+Car.Exist(0@(++1@,10i))
+// is compiled before the line
+1@ += 1
+Car.Exist(0@(1@,10i))
+
+Actor.Angle = 1@f++
+// is compiled after the line
+Actor.Angle = 1@
+1@ += 1.0
+
+wait 1@+30fps
+// is compiled before and after the line
+1@ += 30fps
+wait 1@
+1@ -= 30fps
+</pre>
+This syntax only discriminates spaces and commas.
+</details>
+
+- Constants and enumerations.<br>
+- Characters scape (\t, \n, \", \xff).<br>
+- Connection with <a href="https://library.sannybuilder.com/">Library::SannyBuilder</a> and <a href="https://github.com/MatiDragon-YT/data/tree/master/sa_cp">data::CrossPlataform</a><br>
+</blockquote>
+<blockquote class="info">
+- Operations between variables will always be INT unless "FLOAT" is written before.<br>
+- Arrays without defined typing will expect an INT.<br>
+- This IDE downloads files and stores them in the LocalStorage for faster uploads.<br>
+</blockquote>
+<footer class="center gray">
+Author: MatiDragon ; Contributors: Seemann, OrionSR, Miran.
+</footer>
+
+<script src="js/css.min.js"></script>
+<script type="module" src="compiler.js"></script>
+<script>
+function saveSource(){
+  let a = window.document.createElement('a');
+  
+  a.href = window.URL.createObjectURL(new Blob([$('#HEX').value], { type: 'text/plain' }));
+  a.download = $('#FILENAME').value.r(/\.[^\.]+$/m, '.txt');
+  
+  // Append anchor to body.
+  document.body.appendChild(a)
+  a.click();
+  
+  // Remove anchor from body
+  document.body.removeChild(a)
+}
+function compilerSource(){
+  $('#FORMULARIO').cleaned_hex.value = $('#HEX').value.toCompileSCM($('#FILENAME').value)
+
+	$('#HEX').click();
+}
+
+
+// Función para leer un archivo INI y obtener un valor específico
+function IniFile_GET(iniContent, section, key) {
+	// Supongamos que tienes el contenido del archivo INI en una cadena llamada 'iniContent'
+	// Puedes cargar el contenido desde un archivo o proporcionarlo directamente
+
+	// Parseamos el contenido del archivo INI
+	function parseINIString(data) {
+			const regex = {
+					section: /^\s*\[\s*([^\]]*)\s*\]\s*$/,
+					param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
+					comment: /^\s*;.*$/
+			};
+
+			const value = {};
+			let currentSection = null;
+
+			data.split(/\r?\n/).forEach(line => {
+					if (regex.comment.test(line)) {
+							return;
+					} else if (regex.param.test(line)) {
+							const [, key, val] = line.match(regex.param);
+							if (currentSection) {
+									value[currentSection][key] = val;
+							} else {
+									value[key] = val;
+							}
+					} else if (regex.section.test(line)) {
+							const [, section] = line.match(regex.section);
+							value[section] = {};
+							currentSection = section;
+					}
+			});
+
+			return value;
+	}
+
+	// Aquí debes cargar el contenido del archivo INI o proporcionarlo directamente
+
+	const parsedINI = parseINIString(iniContent);
+
+	// Buscamos el valor en la sección y clave especificadas
+	if (parsedINI[section] && parsedINI[section][key]) {
+			return parsedINI[section][key];
+	} else {
+			return null; // Valor no encontrado
+	}
+}
+
+function parseIniToCLEO (ini){
+	let MODELS = localStorage.getItem('models').split('\n')
+	MODELS.forEach((model, i) => MODELS[i] = model.split(' '))
+
+	let code = ''
+
+	let indActor   = 0, numActor   = IniFile_GET(ini, 'numbers', 'actors'),
+			indAutos   = 0, numAutos   = IniFile_GET(ini, 'numbers', 'actors'),
+			indObjetos = 0, numObjetos = IniFile_GET(ini, 'numbers', 'actors')
+
+	const GENERATION = {
+			NORMAL:0,
+			SPECIAL:1,
+			CUSTOM:2,
+			RANDOM:3,
+			ROPE_NORMAL:4,
+			ROPE_SPECIAL:5,
+			ROPE_CUSTOM:6,
+			ROPE_RANDOM:7,
+	}
+
+	const LoadSpecialActor = {
+		0 : 'ANDRE',
+		1 : 'BBTHIN',
+		2 : 'BB',
+		3 : 'CAT',
+		4 : 'CESAR',
+		5 : 'COPGRL1',
+		6 : 'COPGRL2',
+		7 : 'CLAUDE',
+		8 : 'CROGRL1',
+		9 : 'CROGRL2',
+		10 : 'DWAYNE',
+		11 : 'EMMET',
+		12 : 'FORELLI',
+		13 : 'JANITOR',
+		14 : 'JETHRO',
+		15 : 'JIZZY',
+		16 : 'HERN',
+		17 : 'GANGRL1',
+		18 : 'GANGRL2',
+		19 : 'GUNGRL1',
+		20 : 'GUNGRL2',
+		21 : 'KENDL',
+		22 : 'MACCER',
+		23 : 'MADDOGG',
+		24 : 'MECGRL1',
+		25 : 'MECGRL2',
+		26 : 'NURGRL1',
+		27 : 'NURGRL2',
+		28 : 'OGLOC',
+		29 : 'PAUL',
+		30 : 'PULASKI',
+		31 : 'ROSE',
+		32 : 'RYDER',
+		33 : 'RYDER2',
+		34 : 'RYDER3',
+		35 : 'SINDACO',
+		36 : 'SMOKE',
+		37 : 'SMOKEV',
+		38 : 'SUZIE',
+		39 : 'SWEET',
+		40 : 'TBONE',
+		41 : 'TENPEN',
+		42 : 'TORINO',
+		43 : 'TRUTH',
+		44 : 'WUZIMU',
+		45 : 'ZERO',
+		46 : 'PSYCHO',
+		47 : 'MEDIATR',
+		48 : 'LVPDM1',
+		49 : 'SFPDM1',
+		50 : 'WMYCD2',
+		51 : 'VWMYAP',
+		52 : 'CDEPUT',
+		53 : 'CSBLUE3',
+		54 : 'CSOMOST',
+		55 : 'CSPRO1',
+		56 : 'SBMYTR4',
+		57 : 'CSMECH',
+		58 : 'FAM4',
+		59 : 'FAM5',
+
+		60 : 'OGBURG',
+		61 : 'MAFZI2',
+		62 : 'MAFZI1',
+		63 : 'SALVAR',
+		64 : 'RALPH',
+		65 : 'BOGM',
+		66 : 'TRIDA',
+		67 : 'TRIDB',
+		68 : 'TBOSS',
+		69 : 'SILVERM',
+		70 : 'HELPER',
+		71 : 'DANCA',
+		72 : 'DANCB',
+		73 : 'BETS',
+		74 : 'SUTA',
+		75 : 'CSSUZIE',
+		76 : 'CSKENDL',
+		77 : 'CSDRUG1',
+		78 : 'CSTEXAN',
+		79 : 'CSJOSE',
+		80 : 'CSBDUP',
+		81 : 'CSSLUT',
+		82 : 'CSWMORI',
+		83 : 'CSHO',
+		84 : 'CSBLUE2',
+		85 : 'SOMYAP',
+		86 : 'VWFYPR1',
+	}
+
+	let jumpCode = 0
+
+	while (numActor > indActor){
+		indActor++
+		let slot = 'ACTOR'+indActor
+		let actor = {
+			modelType : IniFile_GET(ini, slot, 'special'),
+			modelId : IniFile_GET(ini, slot, 'model'),
+			pedType : IniFile_GET(ini, slot, 'type'),
+			generation : 0,
+			globalCoordX : IniFile_GET(ini, slot, 'gcoord.x'),
+			globalCoordY : IniFile_GET(ini, slot, 'gcoord.y'),
+			globalCoordZ : IniFile_GET(ini, slot, 'gcoord.z'),
+			globalCoordA : IniFile_GET(ini, slot, 'gcoord.a'),
+			localCoordX : IniFile_GET(ini, slot, 'lcoord.x'),
+			localCoordY : IniFile_GET(ini, slot, 'lcoord.y'),
+			localCoordZ : IniFile_GET(ini, slot, 'lcoord.z'),
+			localCoordA : IniFile_GET(ini, slot, 'lcoord.a'),
+			flags : IniFile_GET(ini, slot, 'props'),
+			health_armor : IniFile_GET(ini, slot, 'health_armor'),
+			attached : IniFile_GET(ini, slot, 'attached'),
+			weapon_ammon : IniFile_GET(ini, slot, 'weapon_ammon'),
+			acuraci_mlle : IniFile_GET(ini, slot, 'acu.mlle'),
+			acuraci_wpon : IniFile_GET(ini, slot, 'acu.wpon'),
+			acuraci_dist : IniFile_GET(ini, slot, 'acu.dist'),
+			rep_anim : IniFile_GET(ini, slot, 'rep.anim'),
+			ifp_file : IniFile_GET(ini, slot, 'ifp.file'),
+			ifp_anim : IniFile_GET(ini, slot, 'ifp.anim'),
+			style_fght : IniFile_GET(ini, slot, 'sty.fght'),
+			style_walk : IniFile_GET(ini, slot, 'sty.walk'),
+		}
+
+		if (actor.pedType == 23) {
+			actor.modelId = ~~(actor.modelType / 10)
+			actor.generation = actor.modelType
+
+			while (actor.generation >= 10){
+				actor.generation -= 10
+			}
+
+			if (actor.generation == (GENERATION.SPECIAL || GENERATION.ROPE_SPECIAL)){
+				code += `23c: load_special_actor '${LoadSpecialActor[actor.modelId]}' as 1\n`
+			}
+			if (actor.generation == (GENERATION.CUSTOM || GENERATION.ROPE_CUSTOM)){
+				code += `23c: load_special_actor '@${actor.modelId}' as 1\n`
+			}
+			jumpCode = code.length
+			code += `:L${jumpCode}
+wait 0
+if 0x0
+23D:  special_actor 1 loaded
+4D: jump_if_false @L${jumpCode}
+`
+			if (actor.generation == GENERATION.SPECIAL
+				||actor.generation == GENERATION.CUSTOM){
+				code += `9A: create_actor_type 23 model #SPECIAL01 at ${actor.globalCoordX} ${actor.globalCoordY} ${actor.globalCoordZ} saving_at ${indActor}@\n`
+			}
+			if (actor.generation == GENERATION.ROPE_SPECIAL
+				||actor.generation == GENERATION.ROPE_CUSTOM){
+				code += `503: create_actor_onrope_type 23 model #SPECIAL01 at ${actor.globalCoordX} ${actor.globalCoordY} ${actor.globalCoordZ} saving_at ${indActor}@\n`
+			}
+			code += `173: actor ${indActor}@ set_angle ${actor.globalCoordA}
+296: release_special_actor 1\n`
+
+		}else{
+			for (let search = 0; search < MODELS.length; search++) {
+				if (MODELS[search][0] == actor.modelId){
+					actor.modelId = '#'+ MODELS[search][1].r(/[\s\r]/, '')
+					break
+				}
+			}
+
+
+			jumpCode = code.length
+			code += `247: load_model ${actor.modelId}
+:L${jumpCode}
+wait 0
+if 0x0
+247:  model ${actor.modelId} available
+4D: jump_if_false @L${jumpCode}
+9A: create_actor_type ${actor.pedType} model ${actor.modelId} at ${actor.globalCoordX} ${actor.globalCoordY} ${actor.globalCoordZ} saving_at ${indActor}@
+173: actor ${indActor}@ set_angle ${actor.globalCoordA}
+249: release_model ${actor.modelId}
+\n`
+		}
+		code += '\n'
+	}
+	code = `nop
+wait 0
+${code}
+terminate_this_script
+`
+	return code
+}
+
+const $node = $('#HEX')
+const $file = $('#file')
+
+const processTextByLine = text => {
+    const arr = text.split(/\r?\n/gm)
+    arr.map(line => console.log(line))
+}
+
+const openFile = event => {
+  const input = event.target
+  if (!input) throw new Error('null input')
+  const [first] = input.files
+
+  const reader = new FileReader()
+  reader.onload = () => {
+    let text = reader.result
+
+
+    if(first.name.toLowerCase().endsWith('.ini')){
+		  text = parseIniToCLEO(text)
+    }
+
+    $node.value = text
+    hl()
+    
+    processTextByLine(text)
+  }
+  
+  reader.readAsText(first)
+   $('#FILENAME').value = first.name.r(/\.([^.]+)$/m, '.csi')
+}
+
+$file.onchange = openFile
+</script>
+<script>
+hl()
+getLine()
+$node.onclick = () => {
+	hl()
+    $('#OUTHEX').innerText = $node.value.Translate(true,true)
+    getLine()
+}
+$node.oninput = hl
+$node.onmousemove = getLine
+$node.onkeyup = (event) =>{
+  if (event.key === '(') {
+    document.execCommand("insertText",false,')')
+  }
+	try {
+	//console.log(event)
+    //if (event.code == 'Enter' 
+    //	|| event.code == 'Backspace'
+    //	|| event.code == 'Space'){
+        //let tempC = $node.value.Translate(true)
+        $('#OUTHEX').innerText = $node.value.Translate(true,true)
+        getLine()
+        $('#error').style.display = 'none'
+    //}
+    } catch(error) {
+        $('#error').style.display = 'flex'
+		$('#error').innerText = error
+	}
+}
+
+function hasScrollBar(e) {
+    return {
+        vertical: e.scrollHeight > e.clientHeight,
+        horizontal: e.scrollWidth > e.clientWidth
+    };
+}
+
+
+function resaltadorV2(){
+  let code = $('#HEX').value
+  let text = ''
+  
+  $('#PREVIEW').innerHTML = text
+}
+
+function hl(){
+	getLine()
+	
+	$("#editor-counterLine").innerHTML = ''
+  $('#HEX').value.split('\n').forEach((a,b)=>{
+    $("#editor-counterLine").innerHTML += b+1 + '\n'
+  })
+
+  //resaltadorV2()
+  
+	const span = {
+		start : "<span class=",
+		end : ">$1<\/span>"
+	}
+
+	const enter = {
+		comments  : span.start + "comments"   + span.end,
+		numbers   : span.start + "numbers"    + span.end,
+		variables : span.start + "variables"  + span.end,
+		opcodes   : span.start + "opcodes"    + span.end,
+		directives: span.start + "directives" + span.end,
+		commands  : span.start + "commands"   + span.end,
+		classes   : span.start + "classes"    + span.end
+	}
+
+	$('#PREVIEW').innerHTML = $('#HEX').value
+	//Palabras Reservadas
+	.r(/(^((\x20|\t|!)+)?[a-z_]+)(\s|$)/gmi, "<span class=keywords>$1<\/span>$4")
+	.r(/(^$)/gm, '$1 ')
+	//.rA('\t', '    ')
+	.rA('&lt;br/&gt;', "\\n")
+	//.r(/(^.)/gm, '<span class=contador><\/span>$1')
+	//Comentarios 
+	.r(/(\/\/([^\n]+)?)/gm, enter.comments)
+	.r(/(\/\*[^\/]*(\*\/)?)/gm, enter.comments)
+	.r(/(\{([^\$][^\{\}]*(\})?)?)/gm, enter.comments)
+	//Directivas
+	.r(/(\{\$[^{}\n]+\})/gm, enter.directives)
+	//Cadenas de texto
+	.r(/"((?:\\.|[^"\\\n])+)(")?/gmi, match => {
+	  match = match.rA("'", "’")
+	  .r(/\\(x[\d\w]+|t|n|'|"|`)/g, "<span class=charScape>\\$1</span>")
+	  return '<span class=strings>'+match+'</span>'
+  })
+	.rA('\\"</span>', '\\"')
+	.rA('\\"<span>', '\\"')
+	.r(/'((?:\\.|[^'\\\n])+)(')?/gmi, match => {
+	  match = match.rA('"', '”')
+	  .r(/\\(x[\d\w]+|t|n|'|"|`)/g, "<span class=charScape>\\$1</span>")
+	  return "<span class=strings>"+match+"</span>"
+  })
+	.rA("\\'</span>", "\\'")
+	.rA("\\'<span>", "\\'")
+	.r(/`((?:\\.|[^`\\])*)(`)?/gmi, match => {
+	  match = match.r(/\\(x[\d\w]+|t|n|'|"|`)/g, "<span class=charScape>\\$1</span>")
+	  return "<span class=strings>"+match+"</span>"
+  })
+	.rA("\\`</span>", "\\`")
+	.rA("\\`<span>", "\\`")
+	//Etiquetas
+	.r(/([^\w\d_])([@:])([\w\d_]+)?/gim, "$1<span class=labels>$2$3<\/span>")
+	.r(/([^\w\.])(\w+)(\([^\n]*\))/gmi, "$1<span class=commands>$2<\/span>$3")
+	//Arreglos
+	.r(/(\[)([\d+]*)(\])/gmi, "$1<span class=numbers>$2<\/span>$3")
+	//Opcodes
+	.r(/([a-f0-9]+\:)/gmi, enter.opcodes)
+	//Variables ADMA
+	.r(/((\&)([\d\-a-fx]+)?)/gim, enter.variables)
+	//Variables globales
+	.r(/((\x{00}|[ifsv])\$([\d\w]+)?)/gm, enter.variables)
+	//Numeros
+	.r(/\b(\d+(b|x|\.)\w+)\b/gmi, enter.numbers)
+	.r(/\b(\-?\.?\d[e\+\-_\d\.]+(fps|[smh])?)\b/gmi, enter.numbers)
+	.r(/\b(true|false|undefined|null|break|continue)\b/gmi, enter.numbers)
+	.r(/(?!\#)(\W)(?!\$)([\d_]+)(?!\:|\@)([ifsv]?)\b/gmi, '$1<span class=numbers>$2$3<\/span>')
+	//Modelos
+	.r(/(\#[^\"\'\#\s]+)\b/gm, "<span class='models'>$1<\/span>")
+	//Clases
+	.r(/\b([a-z0-9]+)\.([a-z0-9]+)/gmi, "<span class=classes>$1</span>.<span class=commands>$2</span>")
+	.r(/(\!?)\.([\w]+)/gmi, "$1.<span class=commands>$2</span>")
+	.r(/(\w+)(\(.+\)\.)(\w+)/gmi, "<span class=classes>$1</span>$2<span class=commands>$3</span>")
+	.r(/(\$\w+|\d+\@)\.([0-9A-Z_a-z]+)/gm, "$1.<span class=commands>$2</span>")
+	.r(/(:|of) (\w+)\n/gm, "$1 <span class=classes>$2</span>\n")
+	.r(/\.([0-9A-Z_a-z]+)\n/gm,"." + enter.commands +"\n")
+	//Variables  
+	.r(/\b(timer(a|b|x|z))\b/gmi, enter.variables)
+	.r(/(\d+\@([ifsv])?)/gmi, enter.variables)
+	// Operadores
+	.r(/(^|\s)(\.|\=|\+|\-|\*|\/|\%|\=\=|\+\=|\-\=|\*\=|\/\=|\%\=|\!=|\+\+|\-\-|\<|\>|\<\=|\>\=|\?\?|\|\||\!)(\s|$)/gmi,"$1<span class=labels>$2<\/span>$3")
+	.r(/(\!|\+\+|\-\-)/gmi,"<span class=labels>$1<\/span>")
+
+	if (hasScrollBar($('#PREVIEW')).vertical){
+	  $('#PREVIEW').scrollTop = $('#HEX').scrollTop
+	  $("#editor-counterLine").scrollTop = $('#HEX').scrollTop
+	}
+	if (hasScrollBar($('#PREVIEW')).horizontal) $('#PREVIEW').scrollLeft = $('#HEX').scrollLeft;
+}
+
+$('#HEX').onscroll = () =>{
+    
+	if (hasScrollBar($('#PREVIEW')).vertical){
+	  $('#PREVIEW').scrollTop = $('#HEX').scrollTop
+	  $("#editor-counterLine").scrollTop = $('#HEX').scrollTop
+	}
+	if (hasScrollBar($('#PREVIEW')).horizontal) $('#PREVIEW').scrollLeft = $('#HEX').scrollLeft;
+}
+
+
+let $textarea = $('#HEX')
+const KEYS_MOBILE = ["\t","&","@","$","#","=","_",'""',"''",'()','{}','[]']
+$('#keys-mobile key', (e, i)=> {
+  e.onclick = ()=>{
+    $textarea.focus();
+      document.execCommand("insertText",false,KEYS_MOBILE[i])
+      if (i > 6) {
+        $textarea.selectionStart--
+        $textarea.selectionEnd--
+      }
+  }
+  //log(i)
+})
+
+let clipPaste = ""
+
+$("[cmd]", e => {
+  let x = e.gAttr("cmd")
+  e.title=x
+  if (x == "paste") {
+    e.onclick = () =>{
+      $textarea.focus();
+      document.execCommand("insertText",false,clipPaste);
+    }
+  } else if (x == "copy" || x == "cut") {
+    e.onclick = (y,z)=>{
+      $textarea.focus();
+      clipPaste = $textarea.getTextSelected()
+      document.execCommand(x);
+    }
+  } else {
+    const f = ()=>{
+      $textarea.focus();
+      document.execCommand(x);
+    }
+    e.onclick = f
+  }
+})
+
+let ctrlPressed = false
+$("key[key]", e => {
+  let x = e.gAttr("key")
+  e.title=x
+  if (x == "all") {
+    e.onclick = () =>{
+      $textarea.focus();
+      $textarea.selectionStart = 0
+      $textarea.selectionEnd = $textarea.value.length
+      getLine()
+    }
+  }
+  if (x == "left") {
+    e.onclick = () =>{
+      $textarea.focus();
+      $textarea.selectionStart--
+      $textarea.selectionEnd--
+      getLine()
+    }
+  }
+  if (x == "right") {
+    e.onclick = () =>{
+      $textarea.focus();
+      $textarea.selectionEnd++
+      $textarea.selectionStart++
+      getLine()
+    }
+  }
+  if (x == "up") {
+    e.onclick = () =>{
+      $textarea.focus();
+      let {columnaCursor, lineaCursor} = $textarea.getLine()
+      $textarea.setCursorFull(lineaCursor-1,columnaCursor)
+    }
+  }
+  if (x == "down") {
+    e.onclick = () =>{
+      $textarea.focus();
+      let {columnaCursor, lineaCursor} = $textarea.getLine()
+      $textarea.setCursorFull(lineaCursor+1,columnaCursor)
+    }
+  }
+  if (x == "ctrl") {
+    e.onclick = () =>{
+      $textarea.focus();
+      ctrlPressed = !ctrlPressed
+    }
+  }
+})
+
+// Escuchar el evento 'click' en todos los elementos <details>
+$('details').forEach((elem) => {
+  elem.addEventListener('click', function() {
+    // Cerrar todos los elementos <details> excepto el que se acaba de hacer clic
+    $('details').forEach((openElem) => {
+      if (openElem !== this) {
+        openElem.removeAttribute('open');
+      }
+    })
+  });
+});
+
+</script>
+<script>
+  if (typeof navigator.serviceWorker !== 'undefined') {
+    navigator.serviceWorker.register('./js/sw.js')
+  }
+  
+  const CACHE_NAME = 'cool-cache';
+
+// Add whichever assets you want to pre-cache here:
+const PRECACHE_ASSETS = [
+    '/assets/',
+    '/src/'
+]
+
+// Listener for the install event - pre-caches our assets list on service worker install.
+self.addEventListener('install', event => {
+    event.waitUntil((async () => {
+        const cache = await caches.open(CACHE_NAME);
+        cache.addAll(PRECACHE_ASSETS);
+    })());
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(self.clients.claim());
+});
+self.addEventListener('fetch', event => {
+  event.respondWith(async () => {
+      const cache = await caches.open(CACHE_NAME);
+
+      // match the request to our cache
+      const cachedResponse = await cache.match(event.request);
+
+      // check if we got a valid response
+      if (cachedResponse !== undefined) {
+          // Cache hit, return the resource
+          return cachedResponse;
+      } else {
+        // Otherwise, go to the network
+          return fetch(event.request)
+      };
+  });
+});
+
+</script>
+</body>
+</html>
