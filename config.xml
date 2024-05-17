@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.matidragon.enchanti" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Enchanti IDE</name>
+    <description>
+        Un IDE para crear mods para GTA San Andreas.
+    </description>
+    <author email="info.matidragon@gmail.com" href="https://matidragon-yt.github.io/page">
+        Tu Nombre
+    </author>
+    <content src="index.html" />
+    <access origin="*" />
+    <!-- Añade aquí más configuraciones específicas de tu app -->
+</widget>
