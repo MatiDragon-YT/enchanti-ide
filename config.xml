@@ -10,7 +10,6 @@
     <content src="index.html" />
     <access origin="*" />
     <!-- Añade aquí más configuraciones específicas de tu app -->
-</widget>
 <platform name="android">
     <icon src="res/icon/android/ldpi.png" density="ldpi"/>
     <icon src="res/icon/android/mdpi.png" density="mdpi"/>
@@ -18,3 +17,7 @@
     <icon src="res/icon/android/xhdpi.png" density="xhdpi"/>
     <!-- Añade más tamaños según sea necesario -->
 </platform>
+
+</widget>
+
+
